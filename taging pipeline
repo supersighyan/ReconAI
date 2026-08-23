@@ -1,0 +1,78 @@
+warning: in the working copy of 'backend/app/main.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/__init__.py', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/app/models/import_batch.py', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/backend/app/main.py b/backend/app/main.py[m
+[1mindex 82e2360..1201520 100644[m
+[1m--- a/backend/app/main.py[m
+[1m+++ b/backend/app/main.py[m
+[36m@@ -1,6 +1,7 @@[m
+ from fastapi import FastAPI[m
+ [m
+ from app.api.routes.health import router as health_router[m
+[32m+[m[32mfrom app.api.routes.imports import router as imports_router[m
+ from app.core.config import get_settings[m
+ [m
+ [m
+[36m@@ -8,6 +9,7 @@[m [mdef create_app() -> FastAPI:[m
+     settings = get_settings()[m
+     application = FastAPI(title=settings.app_name)[m
+     application.include_router(health_router)[m
+[32m+[m[32m    application.include_router(imports_router)[m
+     return application[m
+ [m
+ [m
+[1mdiff --git a/backend/app/models/__init__.py b/backend/app/models/__init__.py[m
+[1mindex d219078..6f5167d 100644[m
+[1m--- a/backend/app/models/__init__.py[m
+[1m+++ b/backend/app/models/__init__.py[m
+[36m@@ -1,6 +1,8 @@[m
+ from app.models.audit_log import AuditLog[m
+ from app.models.exception import ExceptionRecord[m
+ from app.models.import_batch import ImportBatch[m
+[32m+[m[32mfrom app.models.import_column_mapping import ImportColumnMapping[m
+[32m+[m[32mfrom app.models.import_record import ImportRecord[m
+ from app.models.invoice import Invoice[m
+ from app.models.payment import Payment[m
+ from app.models.reconciliation_allocation import ReconciliationAllocation[m
+[36m@@ -12,6 +14,8 @@[m [m__all__ = [[m
+     "AuditLog",[m
+     "ExceptionRecord",[m
+     "ImportBatch",[m
+[32m+[m[32m    "ImportColumnMapping",[m
+[32m+[m[32m    "ImportRecord",[m
+     "Invoice",[m
+     "Payment",[m
+     "ReconciliationAllocation",[m
+[1mdiff --git a/backend/app/models/import_batch.py b/backend/app/models/import_batch.py[m
+[1mindex d573d18..dd48cf6 100644[m
+[1m--- a/backend/app/models/import_batch.py[m
+[1m+++ b/backend/app/models/import_batch.py[m
+[36m@@ -1,7 +1,7 @@[m
+ import uuid[m
+ from datetime import datetime[m
+ [m
+[31m-from sqlalchemy import DateTime, ForeignKey, Integer, String[m
+[32m+[m[32mfrom sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String[m
+ from sqlalchemy.dialects.postgresql import UUID[m
+ from sqlalchemy.orm import Mapped, mapped_column, relationship[m
+ from sqlalchemy.sql import func[m
+[36m@@ -20,6 +20,13 @@[m [mclass ImportBatch(Base):[m
+     record_count: Mapped[int | None] = mapped_column(Integer, nullable=True)[m
+     valid_count: Mapped[int | None] = mapped_column(Integer, nullable=True)[m
+     error_count: Mapped[int | None] = mapped_column(Integer, nullable=True)[m
+[32m+[m[32m    file_size: Mapped[int | None] = mapped_column(BigInteger, nullable=True)[m
+[32m+[m[32m    detected_encoding: Mapped[str | None] = mapped_column(String(50), nullable=True)[m
+[32m+[m[32m    detected_delimiter: Mapped[str | None] = mapped_column(String(10), nullable=True)[m
+[32m+[m[32m    has_header: Mapped[bool | None] = mapped_column(Boolean, nullable=True)[m
+[32m+[m[32m    detected_type: Mapped[str | None] = mapped_column(String(30), nullable=True)[m
+[32m+[m[32m    mapping_status: Mapped[str | None] = mapped_column(String(30), nullable=True)[m
+[32m+[m[32m    validation_status: Mapped[str | None] = mapped_column(String(30), nullable=True)[m
+     status: Mapped[str] = mapped_column(String(30), nullable=False)[m
+     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())[m
+     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)[m
+[36m@@ -27,3 +34,5 @@[m [mclass ImportBatch(Base):[m
+     uploaded_by_user: Mapped["User | None"] = relationship(back_populates="import_batches")[m
+     invoices: Mapped[list["Invoice"]] = relationship(back_populates="source_batch")[m
+     payments: Mapped[list["Payment"]] = relationship(back_populates="source_batch")[m
+[32m+[m[32m    import_records: Mapped[list["ImportRecord"]] = relationship(back_populates="batch")[m
+[32m+[m[32m    column_mappings: Mapped[list["ImportColumnMapping"]] = relationship(back_populates="batch")[m

@@ -1,6 +1,8 @@
 from app.models.audit_log import AuditLog
 from app.models.exception import ExceptionRecord
 from app.models.import_batch import ImportBatch
+from app.models.import_column_mapping import ImportColumnMapping
+from app.models.import_record import ImportRecord
 from app.models.invoice import Invoice
 from app.models.payment import Payment
 from app.models.reconciliation_allocation import ReconciliationAllocation
@@ -12,6 +14,8 @@ __all__ = [
     "AuditLog",
     "ExceptionRecord",
     "ImportBatch",
+    "ImportColumnMapping",
+    "ImportRecord",
     "Invoice",
     "Payment",
     "ReconciliationAllocation",
